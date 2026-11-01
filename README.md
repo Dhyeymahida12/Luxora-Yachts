@@ -12,9 +12,31 @@ After changing `ADMIN_EMAIL`, sign out and sign back in. When setting up image u
 
 ### Production hosting
 
-The application can be deployed from its private Git repository to Laravel Cloud. Use a persistent MySQL database, and attach a public Laravel Object Storage bucket with the disk name `s3` for admin-uploaded images. Set `ADMIN_UPLOAD_DISK=s3` in the Cloud environment. Cloud supplies the S3 connection settings for the attached bucket.
+For a personal or demo site, Alwaysdata offers a free personal hosting plan (currently advertised with 1 GB of storage, 256 MB RAM, and ¼ CPU). It is intended for personal use, not a business production workload. Create an account and a PHP site in the Alwaysdata dashboard; use the free `alwaysdata.net` address or connect a domain you own. Set the site's document root to the Laravel app's `public` directory, never the project root.
 
-The 213 MB homepage video is intentionally excluded from GitHub. Upload the original file to the public bucket and set `HOME_HERO_VIDEO_URL` to its public URL to preserve its quality. Without that setting, the homepage uses the local `public/videos/home-hero.mp4` file.
+1. Select PHP 8.3 or newer and create a MariaDB/MySQL database in the dashboard.
+2. Upload the project to a directory outside the site's document root, then connect over SSH and change to the project directory.
+3. Install production dependencies and create the server-only environment file:
+
+   ```bash
+   composer install --no-dev --optimize-autoloader
+   cp .env.example .env
+   ```
+
+4. Edit `.env` on the server. Set `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL` to the site's HTTPS URL, and the database connection values supplied by Alwaysdata. Set `ADMIN_EMAIL` to the administrator's email and leave `ADMIN_UPLOAD_DISK=public`. Do not upload or commit `.env`.
+5. Initialize the application:
+
+   ```bash
+   php artisan key:generate
+   php artisan migrate --force
+   php artisan db:seed --force
+   php artisan storage:link
+   php artisan optimize
+   ```
+
+6. The 213 MB homepage video is intentionally excluded from GitHub. Transfer the original file by SFTP to `public/videos/home-hero.mp4`; this keeps its original quality. Leave `HOME_HERO_VIDEO_URL` empty to use that local file, or set it to a URL if the video is hosted elsewhere.
+
+The admin registers or signs in using the email configured in `ADMIN_EMAIL`, then opens `/admin`. The free plan has limited resources and is not suitable for a high-traffic commercial site; check Alwaysdata's current plan terms before signing up.
 
 Yacht profiles are stored in the `yachts` table and have a searchable, paginated directory at `/yachts` with individual detail pages. The charter collection is read from the same database. The seeder creates 12 illustrative yacht profiles; names, images, specifications and rates are examples for comparison, not verified vessels or live availability. The informational pages include practical planning guidance and FAQs. The buy, build and design pages also include project steps and briefs, each with a separate planning photo. Optimized yacht and destination photography is stored locally in `public/images`; image credits and licenses are also available in the site footer.
 
