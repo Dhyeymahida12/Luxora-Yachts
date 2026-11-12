@@ -1,0 +1,10 @@
+.env
+.env.*
+.git
+.DS_Store
+vendor
+node_modules
+public/build
+public/hot
+database/*.sqlite
+storage/logs/*
