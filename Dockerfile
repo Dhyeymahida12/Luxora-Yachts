@@ -1,15 +1,3 @@
-FROM node:22-bookworm-slim AS assets
-
-WORKDIR /app
-
-COPY package.json ./
-RUN npm install --no-audit --no-fund
-
-COPY resources ./resources
-COPY vite.config.js ./
-COPY public ./public
-RUN npm run build
-
 FROM php:8.3-apache
 
 RUN apt-get update \
@@ -23,7 +11,6 @@ COPY docker/apache-vhost.conf /etc/apache2/sites-available/000-default.conf
 
 WORKDIR /var/www/html
 COPY . .
-COPY --from=assets /app/public/build ./public/build
 
 RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader \
     && mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs storage/app/public bootstrap/cache database \
